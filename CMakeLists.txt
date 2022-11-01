@@ -6,6 +6,7 @@ enable_testing()
 
 include_directories(./include/)
 include_directories(../TinyTCPServer2/include/)
+include_directories(../../USCiLab/cereal/include/)
 
 file(GLOB_RECURSE SERVER_SOURCE_CPP ./Server/*.cpp)
 file(GLOB_RECURSE SERVER_SOURCE_C ./Server/*.c)
