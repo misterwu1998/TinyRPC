@@ -19,7 +19,17 @@ target_link_directories(
   PUBLIC ../TinyTCPServer2/build/
   PUBLIC ../TinyTCPClient/build/
 )
-target_link_libraries(TinyRPCServer TinyTCPServer2 TinyHTTPServer TinyTCPClient Threads::Threads)
+target_link_libraries(TinyRPCServer TinyTCPServer2 TinyHTTPServer TinyHTTPClient TinyTCPClient Threads::Threads)
+
+file(GLOB_RECURSE TEST_SERVER_CPP ./test/TinyRPCServer/*.cpp)
+add_executable(testTinyRPCServer ${TEST_SERVER_CPP})
+target_link_directories(
+  testTinyRPCServer
+  PUBLIC ../TinyTCPServer2/build/
+  PUBLIC ../TinyTCPClient/build/
+  PUBLIC ./build/
+)
+target_link_libraries(testTinyRPCServer TinyRPCServer TinyTCPServer2 TinyHTTPClient TinyHTTPServer TinyTCPClient Threads::Threads)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

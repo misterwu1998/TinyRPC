@@ -41,6 +41,12 @@ public:\
   };\
 };
 
+#define QuickRPC_ReturnType(ServiceName)\
+std::shared_ptr<ServiceName :: Response>
+
+#define QuickRPC_ArgType(ServiceName)\
+std::shared_ptr<ServiceName :: Request>
+
 #endif // _ServiceMacro_hpp
 
 #if 0 // example

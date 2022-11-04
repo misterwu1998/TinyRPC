@@ -38,11 +38,11 @@ namespace TRPCS
         // 取出HTTP请求体的数据
         if(!req){
           TTCPS2_LOGGER.warn("TRPCS::LocalRegistry::Register(): [](std::shared_ptr<TTCPS2::HTTPRequest> req): req is nullptr");
-          return nullptr;
+          return std::shared_ptr<TTCPS2::HTTPResponse>();
         }
         if(req->body == nullptr || req->body->getLength()<1){
           TTCPS2_LOGGER.warn("TRPCS::LocalRegistry::Register(): [](std::shared_ptr<TTCPS2::HTTPRequest> req): req doesn't contain HTTP body.");
-          return nullptr;
+          return std::shared_ptr<TTCPS2::HTTPResponse>();
         }
         auto rpcReq = std::make_shared<typename Service::Request>();
         {std::stringstream ss;
