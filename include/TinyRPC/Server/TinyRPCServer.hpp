@@ -1,16 +1,17 @@
 #if !defined(_TinyRPCServer_hpp)
 #define _TinyRPCServer_hpp
 
-//遇到internal error后，睡多少秒后才exit（留点时间把500发回给客户端）
-#define SLEEP_AFTER_INTERNAL_ERROR (2)
-
 #include <unordered_map>
 #include <string>
 #include <iostream>
 #include <functional>
+#include <unordered_set>
+#include <memory>
 
-class TTCPS2::TinyHTTPServer;
-class TTCPS2::ThreadPool;
+namespace TTCPS2{
+  class TinyHTTPServer;
+  class ThreadPool;
+}
 
 namespace TRPCS
 {
@@ -20,6 +21,9 @@ namespace TRPCS
   {
   private:
     TTCPS2::TinyHTTPServer* httpServer;
+  
+  protected:
+    std::shared_ptr<LocalRegistry> localRegistry;
   
   public:
   
