@@ -23,7 +23,7 @@ target_link_libraries(TinyRPCServer TinyTCPServer2 TinyHTTPServer TinyHTTPClient
 file(GLOB_RECURSE REGISTRY_SOURCE_CPP ./src/TinyRPC/Registry/*.cpp)
 add_library(TinyRPCRegistry SHARED ${REGISTRY_SOURCE_CPP})
 target_link_directories(
-  TinyRPCServer
+  TinyRPCRegistry
   PUBLIC ../TinyTCPServer2/build/
   PUBLIC ../TinyTCPClient/build/
 )

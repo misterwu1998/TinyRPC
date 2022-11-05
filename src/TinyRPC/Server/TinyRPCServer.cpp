@@ -5,6 +5,7 @@
 #include "TinyHTTPServer/HTTPMessage.hpp"
 #include "TinyRPC/Server/LocalRegistry.hpp"
 #include "util/Config.hpp"
+#include "TinyTCPServer2/Logger.hpp"
 
 namespace TRPCS
 {
@@ -23,24 +24,36 @@ namespace TRPCS
   int TinyRPCServer::run(){
     /// 注册任务
 
+    auto conf = TTCPS2::loadConfigure("../conf/Server/rpcServer.properties");
+
     TTCPS2::HTTPRequest req;
     req.set(http_method::HTTP_POST)
-       .set("/register");
+       .set("/register")
+       .set("RPC-Server-IP", conf["IP"])
+       .set("RPC-Server-Port", conf["port"]);
     for(auto const& s : localRegistry->servicesName){
       req.append(s.data(),s.length())
          .append("\r\n",2);
     }
 
-    auto conf = TTCPS2::loadConfigure();
+    conf = TTCPS2::loadConfigure("../conf/Server/registry.properties");
     ushort port;
     {std::stringstream ss;
     ss << conf["RegistryPort"];
     ss >> port;}
     ::TinyHTTPClient c(conf["RegistryIP"].c_str(), port);
-    c.send(req);
+    if(0>c.send(req)){
+      TTCPS2_LOGGER.warn("TRPCS::TinyRPCServer::run(): fail to send the HTTP request to register services.");
+      return -1;
+    }
+    TTCPS2_LOGGER.trace("TRPCS::TinyRPCServer::run(): the HTTP request to register services has been sent.");
     
     TTCPS2::HTTPResponse res;
     c.recv(res);
+    if(res.status!=http_status::HTTP_STATUS_OK){
+      TTCPS2_LOGGER.warn("TRPCS::TinyRPCServer::run(): fail to register services.");
+      return -1;
+    }
 
     return httpServer->run();
   }
