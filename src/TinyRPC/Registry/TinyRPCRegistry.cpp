@@ -14,7 +14,7 @@ namespace TRPCS
 
     // 服务端注册服务
     httpSettings->route(http_method::HTTP_POST, "/register", [this](std::shared_ptr<TTCPS2::HTTPRequest> req){
-      // 艹，回调的参数改成HTTPRequest后，get不到客户端的socket了，想个办法解决这个问题
+      /// @todo RPC服务端的IP和端口还是得在它们注册服务的时候自己放进HTTP请求内
     });
 
     // 客户端查询服务端的地址
