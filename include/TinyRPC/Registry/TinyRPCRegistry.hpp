@@ -11,7 +11,7 @@ namespace TTCPS2
   class ThreadPool;
 } // namespace TTCPS2
 
-namespace TRPCS
+namespace TRPC
 {
   class TinyRPCRegistry
   {
@@ -53,6 +53,6 @@ namespace TRPCS
     
   };
 
-} // namespace TRPCS
+} // namespace TRPC
 
 #endif // _TinyRPCRegistry_hpp

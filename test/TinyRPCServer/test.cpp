@@ -7,7 +7,7 @@
 
 int main(int argc, char const *argv[])
 {
-  auto lr = std::make_shared<TRPCS::LocalRegistry>();
+  auto lr = std::make_shared<TRPC::LocalRegistry>();
   lr->Register<IntToString>("IntToString");
   
   auto conf = TTCPS2::loadConfigure("../conf/Server/rpcServer.properties");
@@ -17,7 +17,7 @@ int main(int argc, char const *argv[])
   }
   auto ip = conf["IP"].c_str();
   unsigned short port; {std::stringstream ss; ss << conf["port"]; ss >> port;}
-  TRPCS::TinyRPCServer s(conf["IP"].c_str(), port, 16, 2, &(TTCPS2::ThreadPool::getPool(2)), lr  );
+  TRPC::TinyRPCServer s(conf["IP"].c_str(), port, 16, 2, &(TTCPS2::ThreadPool::getPool(2)), lr  );
 
   s.run();
   std::cout << "Input something to shutdown: ";

@@ -5,7 +5,7 @@
 #include <sstream>
 #include "util/Buffer.hpp"
 
-namespace TRPCS
+namespace TRPC
 {
   TinyRPCRegistry::TinyRPCRegistry(
     const char *ip
@@ -141,4 +141,4 @@ namespace TRPCS
     delete httpServer;
   }
 
-} // namespace TRPCS
+} // namespace TRPC

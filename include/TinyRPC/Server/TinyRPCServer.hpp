@@ -13,7 +13,7 @@ namespace TTCPS2{
   class ThreadPool;
 }
 
-namespace TRPCS
+namespace TRPC
 {
   class LocalRegistry;
 
@@ -47,6 +47,6 @@ namespace TRPCS
     virtual ~TinyRPCServer();
   };
     
-} // namespace TRPCS
+} // namespace TRPC
 
 #endif // _TinyRPCServer_hpp

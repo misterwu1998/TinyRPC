@@ -7,7 +7,7 @@
 #include "util/Config.hpp"
 #include "TinyTCPServer2/Logger.hpp"
 
-namespace TRPCS
+namespace TRPC
 {
   TinyRPCServer::TinyRPCServer(
     const char* ip
@@ -43,15 +43,15 @@ namespace TRPCS
     ss >> port;}
     ::TinyHTTPClient c(conf["RegistryIP"].c_str(), port);
     if(0>c.send(req)){
-      TTCPS2_LOGGER.warn("TRPCS::TinyRPCServer::run(): fail to send the HTTP request to register services.");
+      TTCPS2_LOGGER.warn("TRPC::TinyRPCServer::run(): fail to send the HTTP request to register services.");
       return -1;
     }
-    TTCPS2_LOGGER.trace("TRPCS::TinyRPCServer::run(): the HTTP request to register services has been sent.");
+    TTCPS2_LOGGER.trace("TRPC::TinyRPCServer::run(): the HTTP request to register services has been sent.");
     
     TTCPS2::HTTPResponse res;
     c.recv(res);
     if(res.status!=http_status::HTTP_STATUS_OK){
-      TTCPS2_LOGGER.warn("TRPCS::TinyRPCServer::run(): fail to register services.");
+      TTCPS2_LOGGER.warn("TRPC::TinyRPCServer::run(): fail to register services.");
       return -1;
     }
 
@@ -66,4 +66,4 @@ namespace TRPCS
     delete httpServer;
   }
   
-} // namespace TRPCS
+} // namespace TRPC

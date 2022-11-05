@@ -17,7 +17,7 @@
 #include "cereal/archives/xml.hpp"
 #endif
 
-namespace TRPCS
+namespace TRPC
 {
   template<typename RequestType>
   void deserialize(std::istream& i, RequestType& r){
@@ -43,7 +43,7 @@ namespace TRPCS
     a(r);
   }
 
-} // namespace TRPCS
+} // namespace TRPC
 
 #endif // _Cerealization_hpp
 

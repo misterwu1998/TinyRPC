@@ -12,7 +12,7 @@
 #include <unordered_set>
 #include "TinyRPC/Server/Cerealization.hpp"
 
-namespace TRPCS
+namespace TRPC
 {
   /// @brief 继承关系：TCPConnectionFactory <== HTTPHandlerFactory <== LocalRegistry
   /// 当前类不重载任何基类的函数
@@ -25,7 +25,7 @@ namespace TRPCS
     template<typename Service>
     LocalRegistry& Register(std::string const& serviceName){
       if(servicesName.count(serviceName)>0){
-        TTCPS2_LOGGER.info("TRPCS::LocalRegistry::Register(): service {0} duplicated.", serviceName);
+        TTCPS2_LOGGER.info("TRPC::LocalRegistry::Register(): service {0} duplicated.", serviceName);
         return *this;
       }
 
@@ -37,11 +37,11 @@ namespace TRPCS
       , [](std::shared_ptr<TTCPS2::HTTPRequest> req){
         // 取出HTTP请求体的数据
         if(!req){
-          TTCPS2_LOGGER.warn("TRPCS::LocalRegistry::Register(): [](std::shared_ptr<TTCPS2::HTTPRequest> req): req is nullptr");
+          TTCPS2_LOGGER.warn("TRPC::LocalRegistry::Register(): [](std::shared_ptr<TTCPS2::HTTPRequest> req): req is nullptr");
           return std::shared_ptr<TTCPS2::HTTPResponse>();
         }
         if(req->body == nullptr || req->body->getLength()<1){
-          TTCPS2_LOGGER.warn("TRPCS::LocalRegistry::Register(): [](std::shared_ptr<TTCPS2::HTTPRequest> req): req doesn't contain HTTP body.");
+          TTCPS2_LOGGER.warn("TRPC::LocalRegistry::Register(): [](std::shared_ptr<TTCPS2::HTTPRequest> req): req doesn't contain HTTP body.");
           return std::shared_ptr<TTCPS2::HTTPResponse>();
         }
         auto rpcReq = std::make_shared<typename Service::Request>();
@@ -76,22 +76,22 @@ namespace TRPCS
       }      );
 
       if(0>ret){
-        auto msg = "TRPCS::LocalRegistry::Register(): fail to register the service " + serviceName;
+        auto msg = "TRPC::LocalRegistry::Register(): fail to register the service " + serviceName;
         TTCPS2_LOGGER.warn(msg);
         std::cout << msg << std::endl;
       }
       else if(0==ret){
-        TTCPS2_LOGGER.info("TRPCS::LocalRegistry::Register(): service {0} duplicated.", serviceName);
+        TTCPS2_LOGGER.info("TRPC::LocalRegistry::Register(): service {0} duplicated.", serviceName);
       }
       else{
         servicesName.insert(serviceName);
-        TTCPS2_LOGGER.trace("TRPCS::LocalRegistry::Register(): the service {0} been registered locally.", serviceName);
+        TTCPS2_LOGGER.trace("TRPC::LocalRegistry::Register(): the service {0} been registered locally.", serviceName);
       }
       return *this;
     }
 
   };
   
-} // namespace TRPCS
+} // namespace TRPC
 
 #endif // _LocalRegistry_hpp
