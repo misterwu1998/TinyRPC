@@ -10,7 +10,7 @@
 #include "util/Buffer.hpp"
 #include <sstream>
 #include <unordered_set>
-#include "TinyRPC/Server/Cerealization.hpp"
+#include "TinyRPC/Cerealization.hpp"
 
 namespace TRPC
 {

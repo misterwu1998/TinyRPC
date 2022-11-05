@@ -57,6 +57,8 @@ namespace TRPC
       // req的结构：
       // GET /find HTTP/1.1
       // RPC-Service-Name: 【服务的名称】
+      // RPC-Server-IP: 【客户端声称连不上的IP地址，如果客户端刚刚连接RPC服务端失败的话，就有这个header】
+      // RPC-Server-Port: 【客户端声称连不上的端口号，如果客户端刚刚连接RPC服务端失败的话，就有这个header】
       // Content-Length: 0
       // 【其它header……】
       // 

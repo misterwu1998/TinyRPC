@@ -29,6 +29,14 @@ target_link_directories(
 )
 target_link_libraries(TinyRPCRegistry TinyTCPServer2 TinyHTTPServer TinyHTTPClient TinyTCPClient Threads::Threads)
 
+file(GLOB_RECURSE CLIENT_SOURCE_CPP ./src/TinyRPC/Client/*.cpp)
+add_library(TinyRPCClient SHARED ${CLIENT_SOURCE_CPP})
+target_link_directories(
+  TinyRPCClient
+  PUBLIC ../TinyTCPClient/build/
+)
+target_link_libraries(TinyRPCClient TinyHTTPClient TinyTCPClient Threads::Threads)
+
 file(GLOB_RECURSE TEST_SERVER_CPP ./test/TinyRPCServer/*.cpp)
 add_executable(testTinyRPCServer ${TEST_SERVER_CPP})
 target_link_directories(
