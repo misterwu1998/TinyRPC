@@ -48,6 +48,9 @@ namespace TRPC
     int32_t Find(std::string const& serviceName, std::string& ip, std::string& port);
 
     TinyRPCRegistry& Drop(std::string const& serviceName, std::string const& ip, std::string const& port);
+
+    int run();
+    int shutdown();
     
     virtual ~TinyRPCRegistry();
     

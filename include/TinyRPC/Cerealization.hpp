@@ -19,8 +19,8 @@
 
 namespace TRPC
 {
-  template<typename RequestType>
-  void deserialize(std::istream& i, RequestType& r){
+  template<typename Serializable>
+  void deserialize(std::istream& i, Serializable& r){
 #if CEREAL_ARCHIVE_TYPE==0
     cereal::PortableBinaryInputArchive a(i, cereal::PortableBinaryInputArchive::Options::LittleEndian());
 #elif CEREAL_ARCHIVE_TYPE==1
@@ -31,8 +31,8 @@ namespace TRPC
     a(r);
   }
 
-  template<typename ResponseType>
-  void serialize(ResponseType& r, std::ostream& o){
+  template<typename Serializable>
+  void serialize(Serializable& r, std::ostream& o){
 #if CEREAL_ARCHIVE_TYPE==0
     cereal::PortableBinaryOutputArchive a(o, cereal::PortableBinaryOutputArchive::Options::LittleEndian());
 #elif CEREAL_ARCHIVE_TYPE==1

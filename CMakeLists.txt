@@ -27,15 +27,16 @@ target_link_directories(
   PUBLIC ../TinyTCPServer2/build/
   PUBLIC ../TinyTCPClient/build/
 )
-target_link_libraries(TinyRPCRegistry TinyTCPServer2 TinyHTTPServer TinyHTTPClient TinyTCPClient Threads::Threads)
+target_link_libraries(TinyRPCRegistry TinyHTTPServer TinyHTTPClient TinyTCPServer2 TinyTCPClient Threads::Threads)
 
 file(GLOB_RECURSE CLIENT_SOURCE_CPP ./src/TinyRPC/Client/*.cpp)
 add_library(TinyRPCClient SHARED ${CLIENT_SOURCE_CPP})
 target_link_directories(
   TinyRPCClient
+  PUBLIC ../TinyTCPServer2/build/
   PUBLIC ../TinyTCPClient/build/
 )
-target_link_libraries(TinyRPCClient TinyHTTPClient TinyTCPClient Threads::Threads)
+target_link_libraries(TinyRPCClient TinyHTTPServer TinyHTTPClient TinyTCPServer2 TinyTCPClient Threads::Threads)
 
 file(GLOB_RECURSE TEST_SERVER_CPP ./test/TinyRPCServer/*.cpp)
 add_executable(testTinyRPCServer ${TEST_SERVER_CPP})
@@ -45,7 +46,27 @@ target_link_directories(
   PUBLIC ../TinyTCPClient/build/
   PUBLIC ./build/
 )
-target_link_libraries(testTinyRPCServer TinyRPCServer TinyTCPServer2 TinyHTTPClient TinyHTTPServer TinyTCPClient Threads::Threads)
+target_link_libraries(testTinyRPCServer TinyRPCClient TinyRPCRegistry TinyRPCServer TinyHTTPServer TinyHTTPClient TinyTCPServer2 TinyTCPClient Threads::Threads)
+
+file(GLOB_RECURSE TEST_REGISTRY_CPP ./test/TinyRPCRegistry/*.cpp)
+add_executable(testTinyRPCRegistry ${TEST_REGISTRY_CPP})
+target_link_directories(
+  testTinyRPCRegistry
+  PUBLIC ../TinyTCPServer2/build/
+  PUBLIC ../TinyTCPClient/build/
+  PUBLIC ./build/
+)
+target_link_libraries(testTinyRPCRegistry TinyRPCClient TinyRPCRegistry TinyRPCServer TinyHTTPServer TinyHTTPClient TinyTCPServer2 TinyTCPClient Threads::Threads)
+
+file(GLOB_RECURSE TEST_CLIENT_CPP ./test/TinyRPCClient/*.cpp)
+add_executable(testTinyRPCClient ${TEST_CLIENT_CPP})
+target_link_directories(
+  testTinyRPCClient
+  PUBLIC ../TinyTCPServer2/build/
+  PUBLIC ../TinyTCPClient/build/
+  PUBLIC ./build/
+)
+target_link_libraries(testTinyRPCClient TinyRPCClient TinyRPCRegistry TinyRPCServer TinyHTTPServer TinyHTTPClient TinyTCPServer2 TinyTCPClient Threads::Threads)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

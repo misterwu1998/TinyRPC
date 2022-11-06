@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#define QuickRPC_0_service_name(ServiceName)\
+#define QUICK_RPC_0_SERVICE_NAME(ServiceName)\
 class ServiceName{\
 public:\
 \
@@ -16,11 +16,11 @@ public:\
   /** @brief 客户端实现：服务发现、向服务端请求服务；服务端实现：当前服务的实现 @param r @return 失败时，返回nullptr */\
   static std::shared_ptr<Response> Do(std::shared_ptr<Request> r);
 
-#define QuickRPC_1_Request_before_fields\
+#define QUICK_RPC_1_REQUEST_BEFORE_FIELDS\
   class Request{\
   public:
 
-#define QuickRPC_2_Request_fields_serialized(...)\
+#define QUICK_RPC_2_REQUEST_FIELDS_SERIALIZED(...)\
   public:\
     template<typename Archive>\
     void serialize(Archive & a){\
@@ -28,11 +28,11 @@ public:\
     }\
   };
   
-#define QuickRPC_3_Response_before_fields\
+#define QUICK_RPC_3_RESPONSE_BEFORE_FIELDS\
   class Response{\
   public:\
     
-#define QuickRPC_4_Response_fields_serialized(...)\
+#define QUICK_RPC_4_RESPONSE_FIELDS_SERIALIZED(...)\
   public:\
     template<typename Archive>\
     void serialize(Archive & a){\
@@ -41,10 +41,10 @@ public:\
   };\
 };
 
-#define QuickRPC_ReturnType(ServiceName)\
+#define QUICK_RPC_RETURN_TYPE(ServiceName)\
 std::shared_ptr<ServiceName :: Response>
 
-#define QuickRPC_ArgType(ServiceName)\
+#define QUICK_RPC_ARG_TYPE(ServiceName)\
 std::shared_ptr<ServiceName :: Request>
 
 #endif // _ServiceMacro_hpp
@@ -53,14 +53,14 @@ std::shared_ptr<ServiceName :: Request>
 
 #include <string>
 
-QuickRPC_0_service_name(abc)
-QuickRPC_1_Request_before_fields
+QUICK_RPC_0_SERVICE_NAME(abc)
+QUICK_RPC_1_REQUEST_BEFORE_FIELDS
 int id;
 std::string name;
-QuickRPC_2_Request_fields_serialized(id,name)
-QuickRPC_3_Response_before_fields
+QUICK_RPC_2_REQUEST_FIELDS_SERIALIZED(id,name)
+QUICK_RPC_3_RESPONSE_BEFORE_FIELDS
 // int _status_code;//optional
 double score;
-QuickRPC_4_Response_fields_serialized(score)
+QUICK_RPC_4_RESPONSE_FIELDS_SERIALIZED(score)
 
 #endif //example

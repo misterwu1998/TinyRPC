@@ -1,7 +1,7 @@
 #include "SampleServices/IntToString.hpp"
 #include <sstream>
 
-QuickRPC_ReturnType(IntToString) IntToString::Do(QuickRPC_ArgType(IntToString) req){
+QUICK_RPC_RETURN_TYPE(IntToString) IntToString::Do(QUICK_RPC_ARG_TYPE(IntToString) req){
   if(!req) return nullptr;
   std::stringstream ss;
   ss << req->i;

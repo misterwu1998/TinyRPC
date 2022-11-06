@@ -1,10 +1,10 @@
 #include "TinyRPC/ServiceMacro.hpp"
 #include <string>
 
-QuickRPC_0_service_name(IntToString)
-QuickRPC_1_Request_before_fields
+QUICK_RPC_0_SERVICE_NAME(IntToString)
+QUICK_RPC_1_REQUEST_BEFORE_FIELDS
   int64_t i;
-QuickRPC_2_Request_fields_serialized(i)
-QuickRPC_3_Response_before_fields
+QUICK_RPC_2_REQUEST_FIELDS_SERIALIZED(i)
+QUICK_RPC_3_RESPONSE_BEFORE_FIELDS
   std::string i;
-QuickRPC_4_Response_fields_serialized(i)
+QUICK_RPC_4_RESPONSE_FIELDS_SERIALIZED(i)

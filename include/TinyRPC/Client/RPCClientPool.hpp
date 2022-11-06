@@ -4,6 +4,7 @@
 #include "util/Singleton.hpp"
 #include <mutex>
 #include <unordered_map>
+#include <memory>
 
 class TinyHTTPClient;
 
@@ -12,49 +13,23 @@ namespace TRPC
   QuickSingleton_prologue(RPCClientPool)
   
   private:
-
-    std::mutex m_client;
-
     /// @brief <服务名称,HTTP客户端>
-    std::unordered_map<std::string, std::shared_ptr<::TinyHTTPClient>> clients;
-
-    std::mutex m_addr;
-
-    /// @brief <服务名称,服务端IP>
-    std::unordered_map<std::string, std::string> IPs;
-
-    /// @brief <服务名称,服务端端口>
-    std::unordered_map<std::string, std::string> ports;
+    std::unordered_multimap<std::string, std::shared_ptr<TinyHTTPClient>> connections;
+    std::mutex m_connections;
 
   public:
 
-    /// @return 1：成功添加；0：成功替换原来的；-1：出错
-    int add(std::string const& serviceName, std::shared_ptr<::TinyHTTPClient> connection);
-
-    /// @brief 
+    /// @brief 放入一个
+    /// @param connection 放入后，被置空
+    /// @return 1：成功；0：已在池内；-1：出错
+    int put(std::string const& serviceName, std::shared_ptr<TinyHTTPClient>& connection);
+    
+    /// @brief 取走一个
     /// @param serviceName 
-    /// @return 还没有TinyHTTPClient的话，nullptr
-    std::shared_ptr<::TinyHTTPClient> find(std::string const& serviceName);
+    /// @return 如果暂时没有，就返回nullptr
+    std::shared_ptr<TinyHTTPClient> get(std::string const& serviceName);
 
-    /// @brief 
-    /// @param serviceName 
-    /// @return 1：成功移除；0：不需要移除；-1：出错
-    int remove(std::string const& serviceName);
-
-    /// @return 1：成功添加；0：成功替换原来的地址；-1：出错
-    int add(std::string const& serviceName, std::string const& ip, std::string const& port);
-
-    /// @return 1表示找到了；0表示还没有这个服务的地址
-    int find(std::string const& serviceName, std::string& ip, std::string& port);
-
-    /// @brief 如果服务serviceName的地址是{ip,port}, 就删掉它
-    /// @param serviceName 
-    /// @param ip 
-    /// @param port 
-    /// @return 1：成功添加；0：不需要移除；-1：出错
-    int remove(std::string const& serviceName, std::string const& ip, std::string const& port);
-  
-    static RPCClientPool& get(){
+    static RPCClientPool& getPool(){
       static RPCClientPool instance;
       return instance;
     }

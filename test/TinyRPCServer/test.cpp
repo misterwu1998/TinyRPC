@@ -7,12 +7,21 @@
 
 int main(int argc, char const *argv[])
 {
+  auto spdLogger = spdlog::rotating_logger_mt(
+      "TinyRPCServer"
+    , "./temp/log/TinyRPCServer/log"
+    , 1024*1024*4, 4);
+  spdLogger->set_pattern("[%Y%m%d %H:%M:%S.%e %z][%l][thread %t] %v");
+  spdLogger->set_level(spdlog::level::level_enum::trace);
+  spdLogger->flush_on(spdlog::level::level_enum::info);
+  TTCPS2::Logger::initOrGet(spdLogger);
+
   auto lr = std::make_shared<TRPC::LocalRegistry>();
   lr->Register<IntToString>("IntToString");
   
-  auto conf = TTCPS2::loadConfigure("../conf/Server/rpcServer.properties");
+  auto conf = TTCPS2::loadConfigure("../conf/TinyRPCServer/rpcServer.properties");
   if(conf.count("IP")<1 || conf.count("port")<1){
-    std::cout << "Fail to load IP or port from ../conf/Server/rpcServer.properties" << std::endl;
+    std::cout << "Fail to load IP or port from ../conf/TinyRPCServer/rpcServer.properties" << std::endl;
     exit(-1);
   }
   auto ip = conf["IP"].c_str();

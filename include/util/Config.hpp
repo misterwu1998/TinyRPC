@@ -6,7 +6,7 @@
 
 namespace TTCPS2
 {
-  std::unordered_map<std::string, std::string> loadConfigure(std::string const& confPath = "../conf/resources.properties");
+  std::unordered_map<std::string, std::string> loadConfigure(std::string const& confPath = "../conf/TinyRPCresources.properties");
   
 } // namespace TTCPS2
 

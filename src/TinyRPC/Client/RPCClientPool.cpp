@@ -4,85 +4,30 @@
 
 namespace TRPC
 {
-    int RPCClientPool::add(std::string const& serviceName, std::shared_ptr<::TinyHTTPClient> connection){
-      std::lock_guard<std::mutex> lg(m_client);
+    int RPCClientPool::put(std::string const& serviceName, std::shared_ptr<TinyHTTPClient>& connection){
+      std::lock_guard<std::mutex> lg(m_connections);
 
-      auto it = clients.find(serviceName);
-      if(it==clients.end()){
-        clients.insert({serviceName,connection});
-        return 1;
-      }else{
-        it->second = connection;
-        return 0;
+      auto range = connections.equal_range(serviceName);
+      for(auto it = range.first; it!=range.second; it++){
+        if(it->second==connection){
+          return 0;
+        }
       }
+      connections.insert({serviceName,connection});
+      connection = nullptr;
+      return 1;
     }
+    
+    std::shared_ptr<TinyHTTPClient> RPCClientPool::get(std::string const& serviceName){
+      std::lock_guard<std::mutex> lg(m_connections);
 
-    std::shared_ptr<::TinyHTTPClient> RPCClientPool::find(std::string const& serviceName){
-      std::lock_guard<std::mutex> lg(m_client);
-      
-      auto it = clients.find(serviceName);
-      if(it==clients.end()){
+      auto it = connections.find(serviceName);
+      if(it==connections.end()){
         return nullptr;
       }else{
         return it->second;
       }
     }
 
-    int RPCClientPool::remove(std::string const& serviceName){
-      std::lock_guard<std::mutex> lg(m_client);
-      
-      auto it = clients.find(serviceName);
-      if(it==clients.end()){
-        return 0;
-      }else{
-        clients.erase(it);
-        return 1;
-      }
-    }
-
-    int RPCClientPool::add(std::string const& serviceName, std::string const& ip, std::string const& port){
-      std::lock_guard<std::mutex> lg(m_addr);
-
-      auto i = IPs.find(serviceName);
-      auto p = ports.find(serviceName);
-      if(i==IPs.end() || p==ports.end()){
-        IPs.insert({serviceName,ip});
-        ports.insert({serviceName,port});
-        return 1;
-      }else{
-        i->second = ip;
-        p->second = ip;
-        return 0;
-      }
-    }
-
-    int RPCClientPool::find(std::string const& serviceName, std::string& ip, std::string& port){
-      std::lock_guard<std::mutex> lg(m_addr);
-      
-      auto i = IPs.find(serviceName);
-      auto p = ports.find(serviceName);
-      if(i==IPs.end() || p==ports.end()){
-        return 0;
-      }else{
-        ip = i->second;
-        port = p->second;
-        return 1;
-      }
-    }
-
-    int RPCClientPool::remove(std::string const& serviceName, std::string const& ip, std::string const& port){
-      std::lock_guard<std::mutex> lg(m_addr);
-      
-      auto i = IPs.find(serviceName);
-      auto p = ports.find(serviceName);
-      if(i==IPs.end() || p==ports.end()){
-        return 0;
-      }else{
-        IPs.erase(i);
-        ports.erase(p);
-        return 1;
-      }
-    }
-  
 } // namespace TRPC
 

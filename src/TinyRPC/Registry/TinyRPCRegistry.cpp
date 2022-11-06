@@ -52,8 +52,44 @@ namespace TRPC
       return res;
     });
 
-    // 客户端查询服务端的地址
-    httpSettings->route(http_method::HTTP_POST, "/find", [this](std::shared_ptr<TTCPS2::HTTPRequest> req){
+    // 服务端注销服务
+    httpSettings->route(http_method::HTTP_POST, "/unregister", [this](std::shared_ptr<TTCPS2::HTTPRequest> req){
+      // req的结构：
+      // POST /unregister HTTP/1.1
+      // RPC-Server-IP: 【IP地址】
+      // RPC-Server-Port: 【端口号】
+      // Content-Length: 【body长度】
+      // 【其它header……】
+      // 
+      // 【服务1的名称】
+      // 【服务2的名称】
+      // ……
+
+      auto res = std::make_shared<TTCPS2::HTTPResponse>();
+      if(!req) return res;
+      if(req->header.count("RPC-Server-IP")<1 || req->header.count("RPC-Server-Port")<1 || req->body==nullptr){
+        res->set(http_status::HTTP_STATUS_BAD_REQUEST);
+        return res;
+      }
+      auto const& ip = req->header.find("RPC-Server-IP")->second;
+      auto const& port = req->header.find("RPC-Server-Port")->second;
+      std::stringstream body; body << *(req->body);
+      while(! body.eof()){
+        std::string line; std::getline(body,line);
+        int32_t cut = line.length();
+        while(cut>0 && (line[cut-1]=='\r' || line[cut-1]=='\n')) cut--;//cut: 截后长度
+        if(1>cut) break;
+        auto serviceName = line.substr(0,cut);
+
+        this->Drop(serviceName,ip,port);
+      }
+      
+      res->set(http_status::HTTP_STATUS_OK);
+      return res;
+    });
+
+    // 客户端查询服务端的地址或告知不可用的服务端
+    httpSettings->route(http_method::HTTP_GET, "/find", [this](std::shared_ptr<TTCPS2::HTTPRequest> req){
       // req的结构：
       // GET /find HTTP/1.1
       // RPC-Service-Name: 【服务的名称】
@@ -69,8 +105,15 @@ namespace TRPC
         return res;
       }
       auto const& serviceName = req->header.find("RPC-Service-Name")->second;
-      res->set(http_status::HTTP_STATUS_OK);
 
+      // 客户端是否告知了某个RPC服务端不再可用
+      if(req->header.count("RPC-Server-IP")>0 && req->header.count("RPC-Server-Port")){
+        this->Drop(serviceName
+        , req->header.find("RPC-Server-IP")->second
+        , req->header.find("RPC-Server-Port")->second);
+      }
+
+      res->set(http_status::HTTP_STATUS_OK);
       std::string ip,port;
       if(1 > this->Find(serviceName,ip,port)){
         return res;
@@ -137,6 +180,14 @@ namespace TRPC
       a++; p++;
     }
     return *this;
+  }
+
+  int TinyRPCRegistry::run(){
+    return httpServer->run();
+  }
+
+  int TinyRPCRegistry::shutdown(){
+    return httpServer->shutdown();
   }
 
   TinyRPCRegistry::~TinyRPCRegistry(){
