@@ -1,7 +1,7 @@
 #if !defined(_RPCClientMacro_hpp)
 #define _RPCClientMacro_hpp
 
-#if 1 // for coding
+#if 0 // for coding
 
 #include "TinyRPC/ServiceMacro.hpp"
 QUICK_RPC_0_SERVICE_NAME(ServiceName)
@@ -123,6 +123,6 @@ std::shared_ptr< ServiceName ::Response> ServiceName ::Do(std::shared_ptr< Servi
 
 #endif // _RPCClientMacro_hpp
 
-#if 1
+#if 0
 QUICK_RPC_CLIENT(ServiceName)
 #endif
