@@ -1,6 +1,6 @@
 - 依赖
-   1. [TinyTCPServer2、TinyHTTPServer](github.com/misterwu1998/TinyTCPServer2/)
-   2. [TinyTCPClient、TinyHTTPClient](github.com/misterwu1998/TinyTCPClient/)
+   1. [TinyTCPServer2、TinyHTTPServer](https://github.com/misterwu1998/TinyTCPServer2/)
+   2. [TinyTCPClient、TinyHTTPClient](https://github.com/misterwu1998/TinyTCPClient/)
 - 简单的目录结构
   - [配置文件](./conf/)<br>相对于工作目录，默认是```../conf/```
     - [客户端](./conf/TinyRPCClient/)
@@ -42,6 +42,6 @@
         - [服务器](./include/TinyRPC/Server/TinyRPCServer.hpp)
           <br>创建的时候，把刚才那个本地注册中心交给服务器
       - [序列化协议](./include/TinyRPC/Cerealization.hpp)
-        <br>白嫖了[cereal](github.com/USCiLab/cereal/)，build出库文件前确定用二进制、JSON还是XML
+        <br>白嫖了[cereal](https://github.com/USCiLab/cereal/)，build出库文件前确定用二进制、JSON还是XML
       - [RPC服务的快捷宏定义](./include/TinyRPC/ServiceMacro.hpp)
         <br>0~4按顺序使用即可。展开出来的`Do()`在客户端、服务端会有不同的实现，客户端用上述的[客户端快速实现服务的宏](./include/TinyRPC/Client/RPCClientMacro.hpp)实现，服务端则要自定义，真正实现这个服务
