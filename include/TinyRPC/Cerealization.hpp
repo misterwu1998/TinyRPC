@@ -1,8 +1,6 @@
 #if !defined(_Cerealization_hpp)
 #define _Cerealization_hpp
 
-/// @brief cereal提供了多种序列化的协议，服务端在反序列化得到Request、序列化Response时，有不同选择
-
 /// 0 - "portable binary"
 /// 1 - "JSON"
 /// 2 - "XML"
