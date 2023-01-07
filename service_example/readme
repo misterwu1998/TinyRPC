@@ -1,0 +1,5 @@
+当前目录用于存放RPC服务接口声明的范例。
+RPC的客户端、服务端之间需要共享一套服务接口声明，只不过其Do()在两端有不同的实现。
+因此，TinyRPC库的客户端、服务端的使用者需要在工程中把服务接口声明的头文件目录添加到include路径，例如对于当前范例工程，需要添加./include/
+
+另外，TinyRPC依赖于Serial和MyUtils，请将'misterwu1998/Serial/include/','misterwu1998/MyUtils/include/'添加到include路径。
