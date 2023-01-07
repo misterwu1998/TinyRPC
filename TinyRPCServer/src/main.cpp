@@ -48,7 +48,9 @@ int main(int, char**) {
     auto& callbacks = LocalRegistry::getCallbackMap();
     HTTPRequest toRegistry;
     toRegistry.set(http_method::HTTP_GET)
-              .set("/register");
+              .set("/register")
+              .set("IP", serverConf["IP"])
+              .set("port", serverConf["port"]);
     for(auto& kv: callbacks){
         toRegistry.set("Service-Name", kv.first);
     }
@@ -102,7 +104,9 @@ int main(int, char**) {
 
     // 即将结束服务，需要告知注册中心
     toRegistry.set(http_method::HTTP_GET)
-              .set("/drop");
+              .set("/drop")
+              .set("IP", serverConf["IP"])
+              .set("port", serverConf["port"]);
     for(auto& kv: callbacks){
         toRegistry.set("Service-Name", kv.first);
     }

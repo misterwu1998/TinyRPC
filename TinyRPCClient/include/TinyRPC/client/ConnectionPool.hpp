@@ -70,7 +70,7 @@ public:
         ss >> deadPort;
       }
       req.set("Dead-IP", dead->getServerIP())
-         .set("Dead-port", deadPort);
+         .set("Dead-Port", deadPort);
     }
 
     HTTPResponse res;
