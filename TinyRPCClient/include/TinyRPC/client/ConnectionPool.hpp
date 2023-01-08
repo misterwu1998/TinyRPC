@@ -7,10 +7,9 @@
 #include "util/Singleton.hpp"
 #include "util/Config.hpp"
 #include "TinyHTTPServer/HTTPMessage.hpp"
+#include "TinyHTTPClient/TinyHTTPClient.hpp"
 
-class TinyHTTPClient;
-
-QuickSingleton_prologue(ConnectionPool)
+QuickSingleton_prologue(TinyRPCClient_ConnectionPool)
 
 private:
 
@@ -22,7 +21,7 @@ private:
     std::shared_ptr<TinyHTTPClient>
   > connections;
 
-  ConnectionPool(std::string const& p){
+  TinyRPCClient_ConnectionPool(std::string const& p){
     auto conf = loadConfigure(p);
     if(
       conf.count("IP")>0 &&
@@ -40,10 +39,10 @@ private:
 
 public:
 
-  static ConnectionPool& initOrGetPool(
+  static TinyRPCClient_ConnectionPool& initOrGetPool(
     std::string const& registryConfPath = "../conf/registry.properties"
   ){
-    static ConnectionPool p(registryConfPath);
+    static TinyRPCClient_ConnectionPool p(registryConfPath);
     return p;
   }
 
@@ -55,9 +54,11 @@ public:
     std::string const& serviceName,
     std::shared_ptr<TinyHTTPClient> const& dead = nullptr
   ){
-    if(connections.count(serviceName)>0){
+    if(connections.count(serviceName)>0 &&
+       connections[serviceName]!=dead)
+    {
       return connections[serviceName];
-    }//本地还没有，得向注册中心索要
+    }//本地还没有可能可通信的，得向注册中心索要
     
     HTTPRequest req;
     req.set(http_method::HTTP_GET)

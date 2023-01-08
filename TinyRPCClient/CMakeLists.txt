@@ -12,7 +12,14 @@ include_directories(../../Serial/include/)
 include_directories(../../TinyTCPClient/include/)
 include_directories(../../TinyTCPServer2/include/)
 
-add_executable(Test__ ./test/main.cpp)
+file(GLOB_RECURSE TEST_CPP ./test/*.cpp)
+add_executable(TestTinyRPCClient ${TEST_CPP})
+target_link_directories(TestTinyRPCClient
+  PUBLIC ../../TinyTCPServer2/build/
+  PUBLIC ../../TinyTCPClient/build/)
+target_link_libraries(TestTinyRPCClient
+  TinyHTTPServer
+  TinyHTTPClient)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

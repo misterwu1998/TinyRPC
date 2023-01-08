@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <mutex>
+#include "TinyTCPServer2/Logger.hpp"
 #include "TinyHTTPServer/TinyHTTPServer.hpp"
 #include "TinyHTTPServer/HTTPHandlerFactory.hpp"
 #include "TinyHTTPServer/HTTPMessage.hpp"
@@ -9,6 +10,10 @@
 #include "util/ThreadPool.hpp"
 
 int main(int, char**) {
+
+    // 日志
+    TTCPS2_LOGGER.set_level(spdlog::level::level_enum::trace);
+    TTCPS2_LOGGER.flush_on(spdlog::level::level_enum::trace);
     
     // 本端的配置
     auto registryConf = loadConfigure("../conf/registry.properties");
@@ -28,14 +33,11 @@ int main(int, char**) {
     }
 
     std::unordered_map<
-        std::string, //服务名称
+        std::string,/*服务名称*/
         std::vector<
-            std::pair< //某个RPC服务端
-                std::string, //RPC服务端IP
-                uint16_t //RPC服务端端口
-            >
-        >
-    > registry;
+            std::pair/*某个RPC服务端*/<
+                std::string,/*IP*/
+                uint16_t/*端口*/>>> registry;
     std::mutex m_registry;
 
     auto settings = std::make_shared<HTTPHandlerFactory>();
@@ -51,48 +53,63 @@ int main(int, char**) {
 
             if(req->header.count("Service-Name")<1){
                 res->set(http_status::HTTP_STATUS_BAD_REQUEST);
+                TTCPS2_LOGGER.info("[lambda url=='/find'] Bad request.");
                 return res;
             }
             auto serviceName = req->header.find("Service-Name")->second;
+            TTCPS2_LOGGER.trace("[lambda url=='/find'] Service-Name: {0}", serviceName);
 
-            {
-                std::lock_guard<std::mutex> lg_registry(m_registry);
-                if(
-                    registry.count(serviceName)<1 ||
-                    registry[serviceName].empty()
-                ){//目前没有这个服务的提供者
-                    res->set(http_status::HTTP_STATUS_OK); //响应没问题，只是暂时没有这个服务
-                    return res;
-                }
-                auto randomNdx = currentTimeMillis() % (registry[serviceName].size());//负载均衡纯随机
-                auto& selected = registry[serviceName][randomNdx];
-                res->set(http_status::HTTP_STATUS_OK)
-                    .set("IP", selected.first);
-                std::string sPort;{
+            std::lock_guard<std::mutex> lg_registry(m_registry);
+            if( registry.count(serviceName)<1 ||
+                registry[serviceName].empty()
+            ){//目前没有这个服务的提供者
+                res->set(http_status::HTTP_STATUS_OK); //响应没问题，只是暂时没有这个服务
+                TTCPS2_LOGGER.trace(
+                    "[lambda url=='/find'] No server of service {0} yet.",
+                    serviceName);
+                return res;
+            }
+            auto& servers = registry[serviceName];
+            auto randomNdx = currentTimeMillis() % (servers.size());//负载均衡纯随机
+            auto& selected = servers[randomNdx];
+            std::string sPort;{
+                std::stringstream ss;
+                ss << selected.second;
+                ss >> sPort;
+            }
+            res->set(http_status::HTTP_STATUS_OK)
+                .set("IP", selected.first)
+                .set("port", sPort);
+            TTCPS2_LOGGER.trace(
+                "[lambda url=='/find'] Selected server is at {0}:{1}",
+                selected.first, selected.second);
+
+            if( req->header.count("Dead-IP")>0 &&
+                req->header.count("Dead-Port")>0)
+            {//客户端声称某个服务端挂了
+                auto& deadIP = req->header.find("Dead-IP")->second;
+                uint16_t deadPort;{
                     std::stringstream ss;
-                    ss << selected.second;
-                    ss >> sPort;
+                    ss << req->header.find("Dead-Port")->second;
+                    ss >> deadPort;
                 }
-                res->set("port", sPort);
+                TTCPS2_LOGGER.trace(
+                    "[lambda url=='/find'] Client said {0}:{1} is dead.",
+                    deadIP, deadPort
+                );
 
-                if(req->header.count("Dead-IP")>0 &&
-                   req->header.count("Dead-Port")>0)
-                {//客户端声称某个服务端挂了
-                    for(auto it = registry[serviceName].begin();
-                        registry[serviceName].end()!=it;
-                        it++)
-                    {
-                        uint16_t deadPort;{
-                            std::stringstream ss;
-                            ss << req->header.find("Dead-Port")->second;
-                            ss >> deadPort;
-                        }
-                        if(deadPort==it->second &&
-                           req->header.find("Dead-IP")->second==it->first)
-                        {//是要删除的
-                            registry[serviceName].erase(it);
-                            break;
-                        }
+                for(auto sv = servers.begin();
+                    servers.end()!=sv;
+                    sv++)
+                {
+                    if( deadPort==sv->second &&
+                        deadIP==sv->first)
+                    {//是要删除的
+                        servers.erase(sv);
+                        TTCPS2_LOGGER.trace(
+                            "[lambda url=='/find'] The server that is dead said by client has been deleted."
+                        );
+                        break;
                     }
                 }
             }
@@ -114,6 +131,7 @@ int main(int, char**) {
                req->header.count("port")<1)
             {
                 res->set(http_status::HTTP_STATUS_BAD_REQUEST);
+                TTCPS2_LOGGER.info("[lambda url=='/register'] Bad request.");
                 return res;
             }
             auto& serverIP = req->header.find("IP")->second;
@@ -122,16 +140,36 @@ int main(int, char**) {
                 ss << req->header.find("port")->second;
                 ss >> serverPort;
             }
+            TTCPS2_LOGGER.trace(
+                "[lambda url=='/register'] Server is at {0}:{1}.",
+                serverIP, serverPort
+            );
 
             std::lock_guard<std::mutex> lg_registry(m_registry);
-            for(auto it = req->header.find("Service-Name");
-                req->header.end()!=it && it->first=="Service-Name";
-                it++)
+            for(auto kv_serviceName = req->header.find("Service-Name");
+                req->header.end()!=kv_serviceName && kv_serviceName->first=="Service-Name";
+                kv_serviceName++)
             {
-                auto& serviceName = it->first;
-                registry[serviceName].push_back({serverIP,serverPort});
+                auto& serviceName = kv_serviceName->second;
+                auto& servers = registry[serviceName];
+                auto flag = false;
+                for(auto& sv: servers){
+                    if(sv.first==serverIP &&
+                       sv.second==serverPort)//此前有过注册且还为注销，不能有重复
+                    {
+                        flag = true;                        
+                        break;
+                    }
+                }
+                if(flag)//此前有过注册且还为注销，不能有重复
+                {
+                    TTCPS2_LOGGER.trace("[lambda url=='/register'] Done before.");
+                    break;
+                }
+                servers.push_back({serverIP,serverPort});
             }
             res->set(http_status::HTTP_STATUS_OK);
+            TTCPS2_LOGGER.trace("[lambda url=='/register'] OK");
 
             return res;
         }
@@ -150,6 +188,7 @@ int main(int, char**) {
                req->header.count("port")<1)
             {
                 res->set(http_status::HTTP_STATUS_BAD_REQUEST);
+                TTCPS2_LOGGER.info("[lambda url=='/drop'] Bad request.");
                 return res;
             }
             auto& serverIP = req->header.find("IP")->second;
@@ -158,27 +197,37 @@ int main(int, char**) {
                 ss << req->header.find("port")->second;
                 ss >> serverPort;
             }
+            TTCPS2_LOGGER.trace(
+                "[lambda url=='/drop'] Server is at {0}:{1}.",
+                serverIP,serverPort
+            );
 
             std::lock_guard<std::mutex> lg_registry(m_registry);
-            for(auto kv = req->header.find("Service-Name");
-                req->header.end()!=kv && kv->first=="Service-Name";
-                kv++)
+            for(auto kv_serviceName = req->header.find("Service-Name");
+                req->header.end()!=kv_serviceName && kv_serviceName->first=="Service-Name";
+                kv_serviceName++)
             {
-                if(registry.count(kv->second)<1) continue;
-                auto& servers = registry[kv->second];
-                for(auto ii = servers.begin();
-                    servers.end()!=ii;
-                    ii++)
+                auto& serviceName = kv_serviceName->second;
+                if(registry.count(serviceName)<1) continue;
+                auto& servers = registry[serviceName];
+                for(auto sv = servers.begin();
+                    servers.end()!=sv;
+                    sv++)
                 {
-                    if(ii->first==serverIP &&
-                       ii->second==serverPort)
+                    if( sv->first==serverIP &&
+                        sv->second==serverPort)
                     {
-                        servers.erase(ii);
+                        servers.erase(sv);
+                        TTCPS2_LOGGER.trace(
+                            "[lambda url=='/drop'] Server at {0}:{1} drops service {2}.",
+                            serverIP,serverPort, serviceName
+                        );
                         break;
                     }
                 }
             }
             res->set(http_status::HTTP_STATUS_OK);
+            TTCPS2_LOGGER.trace("[lambda url=='/drop'] OK");
 
             return res;
         }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include "TinyRPC/server/LocalRegistry.hpp"
+#include "TinyTCPServer2/Logger.hpp"
 #include "TinyHTTPServer/HTTPMessage.hpp"
 #include "TinyHTTPServer/TinyHTTPServer.hpp"
 #include "TinyHTTPServer/HTTPHandlerFactory.hpp"
@@ -9,6 +10,10 @@
 #include "util/ThreadPool.hpp"
 
 int main(int, char**) {
+
+    // 日志
+    TTCPS2_LOGGER.set_level(spdlog::level::level_enum::trace);
+    TTCPS2_LOGGER.flush_on(spdlog::level::level_enum::trace);
 
     // 注册中心的配置
     auto registryConf = loadConfigure("../conf/registry.properties");
@@ -76,24 +81,37 @@ int main(int, char**) {
     // 启动HTTP服务端
     auto setting = std::make_shared<HTTPHandlerFactory>();
     setting->route(
-        [](std::shared_ptr<HTTPRequest> any){return true;},
+        [](std::shared_ptr<HTTPRequest> req){
+            return req && 
+                   req->url.length() > sizeof("/rpc/")-1 &&
+                   req->url.substr(
+                    0, sizeof("/rpc/")-1
+                   )=="/rpc/";
+        },
         [callbacks](
             std::shared_ptr<HTTPRequest> req
         )-> std::shared_ptr<HTTPResponse> {
-            if(!req) return nullptr;
             
-            if(req->url.length() <= strlen("/rpc/")){
-                return nullptr;
-            }
             auto serviceName = req->url.substr(
-                strlen("/rpc/")
+                sizeof("/rpc/")-1
+            );
+            TTCPS2_LOGGER.trace(
+                "[lambda url='/rpc/'] Client needs service {0}.",
+                serviceName
             );
 
             auto it = callbacks.find(serviceName);
             if(callbacks.end()==it){
+                TTCPS2_LOGGER.info(
+                    "[lambda url='/rpc/'] Client asks for unimplemented service."
+                );
                 return nullptr;
             }
             auto func = it->second;
+            TTCPS2_LOGGER.trace(
+                "[lambda url='/rpc/'] The service {0} is implemented.",
+                serviceName
+            );
             return func(req);
         }
     );
@@ -101,6 +119,15 @@ int main(int, char**) {
         serverConf["IP"].c_str(), serverPort,
         128, 2, setting, &(ThreadPool::getPool(2))
     );
+    if(false){//是否仅和注册中心联调
+        std::cout << "Input something to shutdown: ";
+        getchar();
+    }else{
+        server.run();
+        std::cout << "Input something to shutdown: ";
+        getchar();
+        server.shutdown();
+    }
 
     // 即将结束服务，需要告知注册中心
     toRegistry.set(http_method::HTTP_GET)
